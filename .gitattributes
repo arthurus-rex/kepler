@@ -1,1 +1,4 @@
 bpf/include/* linguist-vendored
+.github/workflows/image.yml merge=ours
+.github/workflows/image_base.yml merge=ours
+.github/workflows/image_pr.yml merge=ours
