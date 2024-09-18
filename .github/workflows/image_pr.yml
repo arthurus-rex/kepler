@@ -14,6 +14,8 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      attestations: write
+      packages: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,7 +30,7 @@ jobs:
       - name: Login to Quay
         uses: docker/login-action@v3
         with:
-          registry: quay.io/sustainable_computing_io
+          registry: quay.io/rh-ee-asavage
           username: ${{ secrets.BOT_NAME }}
           password: ${{ secrets.BOT_TOKEN }}
 
@@ -39,10 +41,18 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: quay.io/sustainable_computing_io/kepler
+          tags: quay.io/rh-ee-asavage/kepler
           labels: ${{ github.event.inputs.commitSHA }}
           file: build/Dockerfile.libbpf.kepler
 
       - name: Sign images with GitHub OIDC token
         run: |
-          cosign sign -y quay.io/sustainable_computing_io/kepler@${{ steps.build-push-image.outputs.digest }}
+          cosign sign -y quay.io/rh-ee-asavage/kepler@${{ steps.build-push-image.outputs.digest }}
+
+      - name: Generate image attestation
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: quay.io/rh-ee-asavage/kepler
+          subject-digest: ${{ steps.build-push-image.outputs.digest }}
+          push-to-registry: true
+
